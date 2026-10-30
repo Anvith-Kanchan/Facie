@@ -23,7 +23,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.face.Face
+import com.google.mlkit.vision.face.FaceLandmark
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import java.util.concurrent.Executors
@@ -110,9 +110,9 @@ class MainActivity : AppCompatActivity() {
         detector.process(input).addOnSuccessListener(executor) { faces ->
             if (!sessionActive) return@addOnSuccessListener
             val face = faces.singleOrNull() ?: run { status.post { status.text = "Keep exactly one face in view."; }; return@addOnSuccessListener }
-            val left = face.getLandmark(Face.LANDMARK_LEFT_EYE)?.position
-            val right = face.getLandmark(Face.LANDMARK_RIGHT_EYE)?.position
-            val nose = face.getLandmark(Face.LANDMARK_NOSE_BASE)?.position
+            val left = face.getLandmark(FaceLandmark.LEFT_EYE)?.position
+            val right = face.getLandmark(FaceLandmark.RIGHT_EYE)?.position
+            val nose = face.getLandmark(FaceLandmark.NOSE_BASE)?.position
             if (left == null || right == null || nose == null) { status.post { status.text = "Face camera in good lighting."; }; return@addOnSuccessListener }
             val command = challenge.getOrNull(challengeIndex)
             val leftOpen = face.leftEyeOpenProbability ?: 1f
