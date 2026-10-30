@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 768" role="img" aria-labelledby="title desc">
+  <title id="title">Facie logo</title>
+  <desc id="desc">Minimal ivory face outline framed by emerald face-scanning corner brackets on a charcoal background, with the Facie wordmark.</desc>
+  <rect width="768" height="768" rx="72" fill="#171A19"/>
+  <g fill="none" stroke="#2FA477" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M185 260v-46q0-18 18-18h46 M519 196h46q18 0 18 18v46 M583 508v46q0 18-18 18h-46 M249 572h-46q-18 0-18-18v-46"/>
+  </g>
+  <g fill="none" stroke="#F2EBDD" stroke-width="19" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M282 294c0-65 42-112 102-112s102 47 102 112v78c0 92-45 153-102 153s-102-61-102-153z"/>
+    <path d="M324 343v2 M444 343v2" stroke-width="24"/>
+    <path d="M355 405q29 22 58 0"/>
+  </g>
+  <path d="M294 476q90 57 180-1" fill="none" stroke="#2FA477" stroke-width="17" stroke-linecap="round"/>
+  <text x="384" y="666" text-anchor="middle" fill="#F2EBDD" font-family="Inter,Arial,sans-serif" font-size="76" font-weight="600" letter-spacing="-3">Facie</text>
+  <circle cx="491" cy="637" r="7" fill="#2FA477"/>
+</svg>
