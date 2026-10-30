@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     private val cameraExecutor = Executors.newSingleThreadExecutor()
     private val modelExecutor = Executors.newSingleThreadExecutor()
-    private val detector by lazy {
+    private val detectorDelegate = lazy {
         FaceDetection.getClient(
             FaceDetectorOptions.Builder()
                 .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
 
     @Volatile private var sessionActive = false
     @Volatile private var busy = false
-    private var enrolling = false
+    private val detector by detectorDelegate\n    private var enrolling = false
     private var failed = 0
     private var lockedUntil = 0L
     private var challenge = listOf("BLINK", "TURN LEFT", "TURN RIGHT").shuffled().take(2)
@@ -345,7 +345,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         sessionActive = false
-        runCatching { detector.close() }
+        if (detectorDelegate.isInitialized()) runCatching { detector.close() }
         embedder?.let { runCatching { it.close() } }
         cameraExecutor.shutdown()
         modelExecutor.shutdown()
