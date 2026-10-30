@@ -21,6 +21,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
@@ -66,6 +67,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         window.setFlags(8192, 8192)
 
         store = SecureTemplateStore(this)
@@ -86,8 +88,8 @@ class MainActivity : AppCompatActivity() {
             isEnabled = false
         }
         val reset = Button(this).apply { text = "Delete enrolled face" }
-        root.addView(status, LinearLayout.LayoutParams(-1, 72))
         root.addView(preview, LinearLayout.LayoutParams(-1, 0, 1f))
+        root.addView(status, LinearLayout.LayoutParams(-1, 72))
         root.addView(action, LinearLayout.LayoutParams(-1, 56))
         root.addView(reset, LinearLayout.LayoutParams(-1, 52))
         setContentView(root)
