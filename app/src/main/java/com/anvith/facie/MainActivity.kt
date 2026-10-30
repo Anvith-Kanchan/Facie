@@ -51,7 +51,8 @@ class MainActivity : AppCompatActivity() {
 
     @Volatile private var sessionActive = false
     @Volatile private var busy = false
-    private val detector by detectorDelegate\n    private var enrolling = false
+    private val detector by detectorDelegate
+    private var enrolling = false
     private var failed = 0
     private var lockedUntil = 0L
     private var challenge = listOf("BLINK", "TURN LEFT", "TURN RIGHT").shuffled().take(2)
