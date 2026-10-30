@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
             .enableTracking().build())
     }
     private var enrolling = false
+    @Volatile private var sessionActive = false
     private var busy = false
     private var failed = 0
     private var lockedUntil = 0L
@@ -75,12 +76,13 @@ class MainActivity : AppCompatActivity() {
         action.setOnClickListener {
             if (System.currentTimeMillis() < lockedUntil) { status.text = "Temporarily locked. Try again later."; return@setOnClickListener }
             enrolling = store.load() == null
+            sessionActive = true
             samples.clear(); challengeIndex = 0; blinkSeen = false; failed = 0
             challenge = listOf("BLINK", "TURN LEFT", "TURN RIGHT").shuffled().take(2)
             status.text = if (enrolling) "Enrollment: complete the liveness prompts" else "Verification: ${challenge[0]}"
         }
         reset.setOnClickListener {
-            store.clear(); samples.clear(); enrolling = false
+            store.clear(); samples.clear(); enrolling = false; sessionActive = false
             status.text = "Enrolled face deleted."; action.text = "Enroll my face"
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) startCamera()
@@ -100,13 +102,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun analyze(proxy: ImageProxy) {
-        if (busy || !enrolling && !action.isPressed && status.text.toString().startsWith("MATCH")) { proxy.close(); return }
+        if (busy || !sessionActive) { proxy.close(); return }
         val media = proxy.image
         if (media == null) { proxy.close(); return }
         busy = true
         val input = InputImage.fromMediaImage(media, proxy.imageInfo.rotationDegrees)
         detector.process(input).addOnSuccessListener(executor) { faces ->
-            if (!enrolling && status.text.toString().startsWith("MATCH")) return@addOnSuccessListener
+            if (!sessionActive) return@addOnSuccessListener
             val face = faces.singleOrNull() ?: run { status.post { status.text = "Keep exactly one face in view."; }; return@addOnSuccessListener }
             val left = face.getLandmark(Face.LANDMARK_LEFT_EYE)?.position
             val right = face.getLandmark(Face.LANDMARK_RIGHT_EYE)?.position
@@ -139,6 +141,7 @@ class MainActivity : AppCompatActivity() {
                         val mean = FloatArray(128) { i -> samples.map { it[i] }.average().toFloat() }
                         val norm = sqrt(mean.sumOf { (it*it).toDouble() }).toFloat().coerceAtLeast(1e-8f)
                         store.save(FloatArray(128) { mean[it] / norm })
+                        sessionActive = false
                         status.post { status.text = "ENROLLED • encrypted template saved locally"; action.text = "Verify identity" }
                         enrolling = false
                     } else {
@@ -150,10 +153,12 @@ class MainActivity : AppCompatActivity() {
                     val score = if (reference == null) -1f else FaceEmbedding.cosine(vector, reference)
                     if (score >= 0.55f) {
                         failed = 0
+                        sessionActive = false
                         status.post { status.text = "MATCH • identity verified (%.3f)".format(score) }
                     } else {
                         failed++
                         if (failed >= 5) lockedUntil = System.currentTimeMillis() + 30_000
+                        sessionActive = false
                         status.post { status.text = "NO MATCH • access denied (%.3f)".format(score) }
                     }
                     challengeIndex = 0; blinkSeen = false
