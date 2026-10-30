@@ -33,6 +33,7 @@ import kotlin.math.sqrt
 class MainActivity : AppCompatActivity() {
     private lateinit var preview: PreviewView
     private lateinit var status: TextView
+    private lateinit var instruction: TextView
     private lateinit var action: Button
     private lateinit var store: SecureTemplateStore
     @Volatile private var embedder: FaceEmbedding? = null
@@ -83,13 +84,20 @@ class MainActivity : AppCompatActivity() {
             gravity = Gravity.CENTER
         }
         preview = PreviewView(this).apply { scaleType = PreviewView.ScaleType.FILL_CENTER }
+        instruction = TextView(this).apply {
+            text = "Look at the camera"
+            textSize = 21f
+            gravity = Gravity.CENTER
+            setPadding(8, 4, 8, 4)
+        }
         action = Button(this).apply {
             text = "Loading face engine…"
             isEnabled = false
         }
         val reset = Button(this).apply { text = "Delete enrolled face" }
         root.addView(preview, LinearLayout.LayoutParams(-1, 0, 1f))
-        root.addView(status, LinearLayout.LayoutParams(-1, 72))
+        root.addView(status, LinearLayout.LayoutParams(-1, 56))
+        root.addView(instruction, LinearLayout.LayoutParams(-1, 44))
         root.addView(action, LinearLayout.LayoutParams(-1, 56))
         root.addView(reset, LinearLayout.LayoutParams(-1, 52))
         setContentView(root)
@@ -110,7 +118,8 @@ class MainActivity : AppCompatActivity() {
             blinkSeen = false
             failed = 0
             challenge = listOf("BLINK", "TURN LEFT", "TURN RIGHT").shuffled().take(2)
-            status.text = if (enrolling) "Enrollment: complete the liveness prompts" else "Verification: ${challenge[0]}"
+            instruction.text = challengeText(challenge[0])
+            status.text = if (enrolling) "Enrollment • sample 1 of 3" else "Verification • follow the instruction"
         }
 
         reset.setOnClickListener {
@@ -231,14 +240,14 @@ class MainActivity : AppCompatActivity() {
                             else -> true
                         }
                         if (!live) {
-                            postStatus("Liveness check: ${command ?: "hold still"}")
+                            postChallenge(command)
                             return@addOnSuccessListener
                         }
 
                         challengeIndex++
                         if (challengeIndex < challenge.size) {
                             blinkSeen = false
-                            postStatus("Liveness check: ${challenge[challengeIndex]}")
+                            postChallenge(challenge[challengeIndex])
                             return@addOnSuccessListener
                         }
 
@@ -305,6 +314,27 @@ class MainActivity : AppCompatActivity() {
             busy = false
             proxy.close()
             postStatus("Camera frame error: ${error.message ?: error.javaClass.simpleName}")
+        }
+    }
+
+    private fun challengeText(command: String?): String = when (command) {
+        "BLINK" -> "Blink both eyes"
+        "TURN LEFT" -> "Turn your head left"
+        "TURN RIGHT" -> "Turn your head right"
+        else -> "Follow the instruction"
+    }
+
+    private fun postChallenge(command: String?) {
+        runOnUiThread {
+            if (!isFinishing && !isDestroyed) {
+                instruction.text = challengeText(command)
+                status.text = when (command) {
+                    "BLINK" -> "Close both eyes, then open them"
+                    "TURN LEFT" -> "Slowly turn your face to your left"
+                    "TURN RIGHT" -> "Slowly turn your face to your right"
+                    else -> "Hold still and look at the camera"
+                }
+            }
         }
     }
 
