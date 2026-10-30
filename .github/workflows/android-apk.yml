@@ -16,6 +16,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
       - uses: android-actions/setup-android@v3
       - name: Download Apache-2.0 MobileFaceNet TFLite model
         run: |
@@ -30,7 +33,7 @@ jobs:
           cp "$MODEL" app/src/main/assets/mobilefacenet.tflite
           sha256sum app/src/main/assets/mobilefacenet.tflite
       - name: Build debug APK
-        run: ./gradlew --no-daemon assembleDebug
+        run: gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: facie-debug-apk
